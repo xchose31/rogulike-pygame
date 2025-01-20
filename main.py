@@ -1,11 +1,10 @@
 import pygame
 import pygame_gui
+from settings import *
 
 pygame.init()
 
 # Размеры экрана
-screen_width = 800
-screen_height = 600
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption("Меню игры")
 
@@ -89,6 +88,5 @@ while running:
         mute_icon.kill()
 
     pygame.display.update()
-
 
 pygame.quit()
