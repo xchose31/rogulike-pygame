@@ -14,7 +14,7 @@ BLACK = (0, 0, 0)
 BACKGROUND_COLOR = (30, 30, 30)
 
 manager = pygame_gui.UIManager((screen_width, screen_height), theme_path=None)
-
+play = False
 
 button_new_game = pygame_gui.elements.UIButton(
     relative_rect=pygame.Rect((300, 200), (200, 50)),
@@ -59,6 +59,7 @@ while running:
         if event.type == pygame_gui.UI_BUTTON_PRESSED:
             if event.ui_element == button_new_game:
                 print("Начата новая игра!")
+                play = True
             elif event.ui_element == button_shop:
                 print("Открыт магазин!")
             elif event.ui_element == button_exit:
@@ -77,8 +78,9 @@ while running:
                 print(f"Выбрана сложность: {difficulty_dropdown.selected_option}")
         manager.process_events(event)
     screen.fill(BACKGROUND_COLOR)
-    manager.update(time_delta)
-    manager.draw_ui(screen)
+    if not play:
+        manager.update(time_delta)
+        manager.draw_ui(screen)
 
     pygame.display.update()
 
