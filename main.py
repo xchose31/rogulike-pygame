@@ -81,6 +81,12 @@ while running:
     if not play:
         manager.update(time_delta)
         manager.draw_ui(screen)
+    else:
+        button_new_game.kill()
+        button_exit.kill()
+        button_shop.kill()
+        difficulty_dropdown.kill()
+        mute_icon.kill()
 
     pygame.display.update()
 
