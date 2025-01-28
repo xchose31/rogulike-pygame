@@ -8,7 +8,6 @@ class Player(pygame.sprite.Sprite):
         super().__init__(groups)
         self.image = pygame.image.load(join('data', 'player', 'PlayerJump.png'))
         self.rect = self.image.get_frect(center=pos)
-
         self.direction = pygame.Vector2()
         self.speed = 500
 
@@ -24,3 +23,11 @@ class Player(pygame.sprite.Sprite):
     def update(self, dt):
         self.input()
         self.move(dt)
+        if self.rect.left < 0:
+            self.rect.left = 0
+        if self.rect.right > screen_width:
+            self.rect.right = screen_width
+        if self.rect.top < 0:
+            self.rect.top = 0
+        if self.rect.bottom > screen_height:
+            self.rect.bottom = screen_height

@@ -21,7 +21,6 @@ class Game:
         Запускает игровой режим: убирает элементы меню.
         """
         self.player = Player((100, 100), self.all_sprites)
-
         self.play = True
         # Удаляем элементы меню
         self.main.button_new_game.kill()
