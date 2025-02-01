@@ -2,6 +2,10 @@ import pygame_gui
 from Main_menu import *
 from settings import *
 from Player import *
+from Enemy import
+from pytmx.util_pygame import load_pygame
+import os
+
 
 
 class Game:
@@ -21,6 +25,7 @@ class Game:
         Запускает игровой режим: убирает элементы меню.
         """
         self.player = Player((100, 100), self.all_sprites)
+        self.enemy = E
         self.play = True
         # Удаляем элементы меню
         self.main.button_new_game.kill()

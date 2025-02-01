@@ -20,6 +20,9 @@ class Player(pygame.sprite.Sprite):
     def move(self, dt):
         self.rect.center += self.direction * self.speed * dt
 
+    def get_coord(self):
+        return self.rect.center
+
     def update(self, dt):
         self.input()
         self.move(dt)
@@ -31,3 +34,4 @@ class Player(pygame.sprite.Sprite):
             self.rect.top = 0
         if self.rect.bottom > screen_height:
             self.rect.bottom = screen_height
+        print(self.get_coord())
