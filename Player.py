@@ -7,6 +7,9 @@ class Player(pygame.sprite.Sprite):
     def __init__(self, pos, groups):
         super().__init__(groups)
         self.image = pygame.image.load(join('data', 'player', 'PlayerJump.png'))
+        new_width = int(self.image.get_width() * 2)  # Уменьшаем до 50% оригинальной ширины
+        new_height = int(self.image.get_height() * 2)  # Уменьшаем до 50% оригинальной высоты
+        self.image = pygame.transform.scale(self.image, (new_width, new_height))
         self.rect = self.image.get_frect(center=pos)
         self.direction = pygame.Vector2()
         self.speed = 500
@@ -34,4 +37,3 @@ class Player(pygame.sprite.Sprite):
             self.rect.top = 0
         if self.rect.bottom > screen_height:
             self.rect.bottom = screen_height
-        print(self.get_coord())

@@ -2,11 +2,9 @@ import pygame_gui
 from Main_menu import *
 from settings import *
 from Player import *
-from Enemy import
+from Enemy import *
 from pytmx.util_pygame import load_pygame
 import os
-
-
 
 class Game:
     def __init__(self):
@@ -19,13 +17,14 @@ class Game:
         self.main = Main_menu()  # Инициализация меню
 
         self.all_sprites = pygame.sprite.Group()
+        self.enemies = pygame.sprite.Group()
 
     def start_game(self):
         """
         Запускает игровой режим: убирает элементы меню.
         """
         self.player = Player((100, 100), self.all_sprites)
-        self.enemy = E
+        self.enemy = Enemy((120, 120), self.enemies)
         self.play = True
         # Удаляем элементы меню
         self.main.button_new_game.kill()
@@ -75,6 +74,7 @@ class Game:
                 self.draw_game()
 
             self.all_sprites.update(dt)
+            self.enemies.update(dt)
             pygame.display.update()
 
         pygame.quit()
@@ -85,6 +85,7 @@ class Game:
         """
         # Временно: просто текст в центре
         self.all_sprites.draw(self.screen)
+        self.enemies.draw(self.screen)
 
 
 if __name__ == '__main__':

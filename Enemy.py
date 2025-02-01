@@ -8,11 +8,14 @@ class Enemy(pygame.sprite.Sprite):
     def  __init__(self, pos, groups):
         super().__init__(groups)
         self.image = pygame.image.load(join('data', 'enemy', 'enemy.png'))
+        new_width = int(self.image.get_width() * 0.1)  # Уменьшаем до 50% оригинальной ширины
+        new_height = int(self.image.get_height() * 0.1)  # Уменьшаем до 50% оригинальной высоты
+        self.image = pygame.transform.scale(self.image, (new_width, new_height))
         self.rect = self.image.get_frect(center=pos)
         self.direction = pygame.Vector2()
         self.speed = 100
 
-    def move(self):
+    def move(self, dt):
         coord = Player.get_coord()
         player_x = coord[0]
         player_y = coord[1]
@@ -30,3 +33,5 @@ class Enemy(pygame.sprite.Sprite):
             # обновляем позицию врага
             self.rect.x += direction_x * self.speed
             self.rect.y += direction_y * self.speed
+
+            self.rect.center += self.direction * self.speed * dt
