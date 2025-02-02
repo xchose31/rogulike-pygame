@@ -23,8 +23,9 @@ class Game:
         """
         Запускает игровой режим: убирает элементы меню.
         """
+        self.load_level(os.path.abspath("data/maps/polygon.tmx"))
         self.player = Player((100, 100), self.all_sprites)
-        self.enemy = Enemy((120, 120), self.enemies)
+        self.enemy = Enemy((120, 120), self.enemies, self.player)
         self.play = True
         # Удаляем элементы меню
         self.main.button_new_game.kill()
@@ -83,12 +84,15 @@ class Game:
         """
         Логика и отрисовка игрового процесса.
         """
-        # Временно: просто текст в центре
         self.all_sprites.draw(self.screen)
         self.enemies.draw(self.screen)
+
+    def load_level(self, level_path):
+        tmx_data = load_pygame(level_path)
+
 
 
 if __name__ == '__main__':
     game = Game()
     game.run()
-    print(dir(pygame))
+
