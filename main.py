@@ -1,3 +1,5 @@
+import random
+
 import pygame_gui
 from Main_menu import *
 from settings import *
@@ -5,6 +7,7 @@ from Player import *
 from Enemy import *
 from pytmx.util_pygame import load_pygame
 import os
+
 
 class Game:
     def __init__(self):
@@ -14,18 +17,23 @@ class Game:
         self.play = False
         self.clock = pygame.time.Clock()
         self.running = True
-        self.main = Main_menu()  # Инициализация меню
-
+        self.main = Main_menu()
         self.all_sprites = pygame.sprite.Group()
         self.enemies = pygame.sprite.Group()
+        self.spawn_timer = 0
+        self.spawn_interval = 3
+        self.font = pygame.font.Font(None, 74)
+        self.difficulty_settings = {
+            "Легко": 5,
+            "Средне": 3,
+            "Тяжело": 1
+        }
 
     def start_game(self):
         """
         Запускает игровой режим: убирает элементы меню.
         """
-        self.load_level(os.path.abspath("data/maps/polygon.tmx"))
-        self.player = Player((100, 100), self.all_sprites)
-        self.enemy = Enemy((120, 120), self.enemies, self.player)
+        self.player = Player((100, 100), self.all_sprites, self.enemies)
         self.play = True
         # Удаляем элементы меню
         self.main.button_new_game.kill()
@@ -34,14 +42,27 @@ class Game:
         self.main.difficulty_dropdown.kill()
         self.main.mute_icon.kill()
 
+    def spawn_enemy(self):
+        """
+        Создает нового врага на краю экрана.
+        """
+        side = random.choice(["left", "right", "top", "bottom"])
+        if side == "left":
+            x, y = -50, random.randint(0, screen_height)
+        elif side == "right":
+            x, y = screen_width + 50, random.randint(0, screen_height)
+        elif side == "top":
+            x, y = random.randint(0, screen_width), -50
+        elif side == "bottom":
+            x, y = random.randint(0, screen_width), screen_height + 50
+        Enemy((x, y), [self.all_sprites, self.enemies], self.player)
+
     def run(self):
         while self.running:
             dt = self.clock.tick() / 1000  # Ограничение FPS
-
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
-
                 if not self.play:  # Обработка событий меню
                     self.main.manager.process_events(event)
                     if event.type == pygame_gui.UI_BUTTON_PRESSED:
@@ -60,10 +81,12 @@ class Game:
                             else:
                                 self.main.mute_icon.set_text("звук+")
                                 print("Звук включен")
-
                     if event.type == pygame_gui.UI_DROP_DOWN_MENU_CHANGED:
                         if event.ui_element == self.main.difficulty_dropdown:
                             print(f"Выбрана сложность: {self.main.difficulty_dropdown.selected_option}")
+                            difficulty = self.main.difficulty_dropdown.selected_option
+                            print(difficulty[0])
+                            self.spawn_interval = self.difficulty_settings[difficulty[0]]
 
             # Отрисовка
             self.screen.fill(BACKGROUND_COLOR)
@@ -71,28 +94,40 @@ class Game:
                 self.main.manager.update(dt)
                 self.main.manager.draw_ui(self.screen)
             else:  # Игровой режим
-                # Здесь будет логика и отрисовка самой игры
+                # Обновление таймера и создание врагов
+                if not self.player.killed:
+                    self.spawn_timer += dt
+                    if self.spawn_timer >= self.spawn_interval:
+                        self.spawn_enemy()
+                        self.spawn_timer = 0
+
+                # Логика и отрисовка самой игры
                 self.draw_game()
 
             self.all_sprites.update(dt)
-            self.enemies.update(dt)
             pygame.display.update()
-
         pygame.quit()
 
     def draw_game(self):
         """
         Логика и отрисовка игрового процесса.
         """
-        self.all_sprites.draw(self.screen)
-        self.enemies.draw(self.screen)
+        if not self.player.killed:
+            self.all_sprites.draw(self.screen)
+            self.player.draw_health_bar(self.screen)
+        else:
+            self.all_sprites.empty()
+            self.draw_game_over()
 
-    def load_level(self, level_path):
-        tmx_data = load_pygame(level_path)
-
+    def draw_game_over(self):
+        """
+        Отображает текст "Game Over" на экране.
+        """
+        text = self.font.render("Game Over", True, (255, 0, 0))
+        text_rect = text.get_rect(center=(screen_width // 2, screen_height // 2))
+        self.screen.blit(text, text_rect)
 
 
 if __name__ == '__main__':
     game = Game()
     game.run()
-
