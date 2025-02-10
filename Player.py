@@ -54,7 +54,7 @@ class Player(pygame.sprite.Sprite):
             print("Игрок уничтожен!")
             self.killed = True
             self.kill()
-            Game.play(Game, 'Game Over.mp3')
+            Game.play( 'Game Over.mp3')
 
     def draw_health_bar(self, screen):
         """
