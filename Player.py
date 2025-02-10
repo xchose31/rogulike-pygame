@@ -1,4 +1,5 @@
 import pygame.image
+from main import Game
 
 from settings import *
 
@@ -6,11 +7,16 @@ from settings import *
 class Player(pygame.sprite.Sprite):
     def __init__(self, pos, groups, enemies):
         super().__init__(groups)
-        self.image = pygame.image.load(join('data', 'player', 'PlayerJump.png'))
-        new_width = int(self.image.get_width() * 2)  # Увеличиваем до 200% оригинального размера
-        new_height = int(self.image.get_height() * 2)
-        self.image = pygame.transform.scale(self.image, (new_width, new_height))
+        pygame.mixer.init()
+        self.image = pygame.image.load(join('data', 'player', 'PlayerLeft.png'))
+        self.image = pygame.transform.scale(self.image,
+                                            (int(self.image.get_width() * 2), int(self.image.get_height() * 2)))
+        self.left = False
         self.rect = self.image.get_frect(center=pos)
+        self.images = {
+            'left': pygame.transform.scale(pygame.image.load(join('data', 'player', 'PlayerLeft.png')), (30, 30)),
+            'right': pygame.transform.scale(pygame.image.load(join('data', 'player', 'PlayerRight.png')), (30, 30))
+        }
         self.direction = pygame.Vector2()
         self.speed = 500
         self.max_health = 100
@@ -43,10 +49,12 @@ class Player(pygame.sprite.Sprite):
         """Наносит урон игроку."""
         self.health -= amount
         print(f"Здоровье игрока: {self.health}")
+        Game.play(Game, 'hp.mp3')
         if self.health <= 0:
             print("Игрок уничтожен!")
             self.killed = True
             self.kill()
+            Game.play(Game, 'Game Over.mp3')
 
     def draw_health_bar(self, screen):
         """
@@ -75,6 +83,13 @@ class Player(pygame.sprite.Sprite):
     def update(self, dt):
         self.input()
         self.move(dt)
+
+        # Изменение изображения в зависимости от направления
+        if self.direction.x > 0:
+            self.image = self.images['right']
+        elif self.direction.x < 0:
+            self.image = self.images['left']
+
         if self.rect.left < 0:
             self.rect.left = 0
         if self.rect.right > screen_width:
@@ -83,3 +98,9 @@ class Player(pygame.sprite.Sprite):
             self.rect.top = 0
         if self.rect.bottom > screen_height:
             self.rect.bottom = screen_height
+
+
+
+    def get_rect(self):
+        return self.rect.center
+
