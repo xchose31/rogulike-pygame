@@ -20,6 +20,7 @@ class Game:
         self.main = Main_menu()
         self.all_sprites = pygame.sprite.Group()
         self.enemies = pygame.sprite.Group()
+        self.weapons =  pygame.sprite.Group()
         self.spawn_timer = 0
         self.spawn_interval = 3
         self.font = pygame.font.Font(None, 74)
@@ -126,6 +127,17 @@ class Game:
         text = self.font.render("Game Over", True, (255, 0, 0))
         text_rect = text.get_rect(center=(screen_width // 2, screen_height // 2))
         self.screen.blit(text, text_rect)
+
+
+    def play(self, filename):
+        current_directory = os.path.dirname(__file__)
+        sounds_directory = os.path.join(current_directory, 'Sounds')
+        sound_file_path = os.path.join(sounds_directory, filename)
+        pygame.mixer.set_num_channels(1000)
+        sound = pygame.mixer.Sound(sound_file_path)  # Создание объекта Sound
+        channel = pygame.mixer.find_channel()  # Поиск свободного канала
+        if channel:
+            channel.play(sound)
 
 
 if __name__ == '__main__':
