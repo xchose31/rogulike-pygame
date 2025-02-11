@@ -23,6 +23,7 @@ class Player(pygame.sprite.Sprite):
         self.health = 100  # Здоровье игрока
         self.enemies = enemies  # Группа врагов для проверки коллизий
         self.killed = False
+        self.counter = 0
 
     def input(self):
         keys = pygame.key.get_pressed()
@@ -54,7 +55,7 @@ class Player(pygame.sprite.Sprite):
             print("Игрок уничтожен!")
             self.killed = True
             self.kill()
-            Game.play( 'Game Over.mp3')
+            Game.play(Game, 'Game Over.mp3')
 
     def draw_health_bar(self, screen):
         """
@@ -99,8 +100,8 @@ class Player(pygame.sprite.Sprite):
         if self.rect.bottom > screen_height:
             self.rect.bottom = screen_height
 
-
-
     def get_rect(self):
         return self.rect.center
 
+    def take_item(self):
+        self.counter += 5

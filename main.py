@@ -1,5 +1,6 @@
 import random
 
+import pygame.sprite
 import pygame_gui
 from Main_menu import *
 from settings import *
@@ -21,6 +22,7 @@ class Game:
         self.all_sprites = pygame.sprite.Group()
         self.enemies = pygame.sprite.Group()
         self.weapons =  pygame.sprite.Group()
+        self.items = pygame.sprite.Group()
         self.spawn_timer = 0
         self.spawn_interval = 3
         self.font = pygame.font.Font(None, 74)
@@ -57,6 +59,14 @@ class Game:
         elif side == "bottom":
             x, y = random.randint(0, screen_width), screen_height + 50
         Enemy((x, y), [self.all_sprites, self.enemies], self.player)
+
+
+    def spawn_item(self):
+        """
+        Создает нового врага на краю экрана.
+        """
+        coord = (random.randint(0, screen_width), random.randint(0, screen_height))
+        Enemy(coord, [self.all_sprites, self.items], self.player)
 
     def run(self):
         while self.running:
@@ -116,6 +126,7 @@ class Game:
         if not self.player.killed:
             self.all_sprites.draw(self.screen)
             self.player.draw_health_bar(self.screen)
+            self.items.draw(self.screen)
         else:
             self.all_sprites.empty()
             self.draw_game_over()
