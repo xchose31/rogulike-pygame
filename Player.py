@@ -23,7 +23,6 @@ class Player(pygame.sprite.Sprite):
         self.health = 100  # Здоровье игрока
         self.enemies = enemies  # Группа врагов для проверки коллизий
         self.killed = False
-        self.counter = 0
 
     def input(self):
         keys = pygame.key.get_pressed()
