@@ -13,6 +13,8 @@ class Player(pygame.sprite.Sprite):
                                             (int(self.image.get_width() * 2), int(self.image.get_height() * 2)))
         self.left = False
         self.rect = self.image.get_frect(center=pos)
+        self.rect.w -= 10
+        self.rect.h -= 10
         self.images = {
             'left': pygame.transform.scale(pygame.image.load(join('data', 'player', 'PlayerLeft.png')), (30, 30)),
             'right': pygame.transform.scale(pygame.image.load(join('data', 'player', 'PlayerRight.png')), (30, 30))
@@ -24,6 +26,7 @@ class Player(pygame.sprite.Sprite):
         self.enemies = enemies  # Группа врагов для проверки коллизий
         self.killed = False
         self.counter = 0
+        self.kill_counter = 0
 
     def input(self):
         keys = pygame.key.get_pressed()
@@ -105,3 +108,31 @@ class Player(pygame.sprite.Sprite):
 
     def take_item(self):
         self.counter += 5
+
+
+class Bullet(pygame.sprite.Sprite):
+    def __init__(self, enemies, player, groups, pos, direction):
+        super().__init__(groups)
+        self.image = pygame.image.load(join('data', 'weapons', 'bomb.png'))
+        self.image = pygame.transform.scale(self.image,
+                                            (int(self.image.get_width() * 0.1), int(self.image.get_height() * 0.1)))
+        self.rect = self.image.get_frect(center=pos)
+        self.direction = direction
+        self.enemies = enemies
+        self.player = player
+        self.speed = 200
+
+    def check_collisions(self):
+        """Проверяет столкновения с врагами."""
+        collided_enemies = pygame.sprite.spritecollide(self, self.enemies, False)
+        if collided_enemies:
+            for enemy in collided_enemies:
+                enemy.kill()  # Игрок получает урон
+                self.kill()
+                self.player.kill_counter += 1
+
+    def update(self, dt):
+        self.rect.center += self.direction * self.speed * dt
+        if not (0 <= self.rect.x <= screen_width) or not (0 <= self.rect.y <= screen_height):
+            self.kill()
+        self.check_collisions()

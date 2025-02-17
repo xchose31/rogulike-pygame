@@ -25,8 +25,11 @@ class Game:
         self.enemies = pygame.sprite.Group()
         self.weapons = pygame.sprite.Group()
         self.items = pygame.sprite.Group()
+        self.bullets = pygame.sprite.Group()
         self.spawn_timer = 0
         self.score_timer = 0
+        self.shoot_timer = 0
+        self.shoot_interval = 0.5
         self.spawn_interval = 3
         self.score = 0
         self.font = pygame.font.Font(None, 74)
@@ -35,6 +38,7 @@ class Game:
             "Средне": 3,
             "Тяжело": 1
         }
+        self.player = None
 
     def run(self):
         while self.running:
@@ -66,6 +70,15 @@ class Game:
                             difficulty = self.main.difficulty_dropdown.selected_option
                             print(difficulty[0])
                             self.spawn_interval = self.difficulty_settings[difficulty[0]]
+                if event.type == pygame.MOUSEBUTTONDOWN and not self.player is None and self.shoot_timer >= self.shoot_interval:
+                    if event.button == 1:
+                        mouse_pos = pygame.mouse.get_pos()
+                        direction = pygame.math.Vector2(mouse_pos) - pygame.math.Vector2(self.player.rect.center)
+                        if direction.length() > 0:
+                            direction = direction.normalize()
+                        Bullet(self.enemies, self.player, [self.all_sprites, self.bullets], self.player.rect.center,
+                               direction)
+                        self.shoot_timer = 0
 
             # Отрисовка
             self.screen.fill(BACKGROUND_COLOR)
@@ -73,10 +86,11 @@ class Game:
                 self.main.manager.update(dt)
                 self.main.manager.draw_ui(self.screen)
             else:  # Игровой режим
-                # Обновление таймера и создание врагов
+                # Обновление таймеров и создание врагов
                 if not self.player.killed:
                     self.spawn_timer += dt
                     self.score_timer += dt
+                    self.shoot_timer += dt
                     if self.spawn_timer >= self.spawn_interval:
                         self.spawn_enemy()
                         self.spawn_item()
@@ -88,6 +102,19 @@ class Game:
             pygame.display.update()
         pygame.quit()
 
+    def start_game(self):
+        """
+        Запускает игровой режим: убирает элементы меню.
+        """
+        self.player = Player((100, 100), self.all_sprites, self.enemies)
+        self.play = True
+        # Удаляем элементы меню
+        self.main.button_new_game.kill()
+        self.main.button_exit.kill()
+        self.main.button_shop.kill()
+        self.main.difficulty_dropdown.kill()
+        self.main.mute_icon.kill()
+
     def draw_game(self):
         """
         Логика и отрисовка игрового процесса.
@@ -96,6 +123,7 @@ class Game:
             self.all_sprites.draw(self.screen)
             self.player.draw_health_bar(self.screen)
             self.draw_score()
+            self.reload_bar()
         else:
             self.all_sprites.empty()
             self.draw_game_over()
@@ -112,9 +140,25 @@ class Game:
         self.screen.blit(text, text_rect)
 
     def draw_score(self):
-        self.score = self.player.counter * 10 + round(self.score_timer, 1)
+        self.score = self.player.counter * 10 + round(self.score_timer, 1) + self.player.kill_counter * 5
         text = self.font.render(str(self.score), True, (255, 0, 0))
         self.screen.blit(text, (10, 10))
+
+    def reload_bar(self):
+        bar_width = 50
+        bar_height = 5
+        border_color = BLUE
+
+        reload_bar_x = self.player.rect.centerx - bar_width // 2
+        reload_bar_y = self.player.rect.top - 20
+        fill_color = LITE_BLUE
+
+        pygame.draw.rect(self.screen, border_color, (reload_bar_x, reload_bar_y, bar_width, bar_height))
+
+        fill_width = int((self.shoot_timer / self.shoot_interval) * bar_width)
+        if fill_width >= bar_width:
+            fill_width = bar_width
+        pygame.draw.rect(self.screen, fill_color, (reload_bar_x, reload_bar_y, fill_width, bar_height))
 
     def save_score(self):
         with open("scores.txt", "a") as file:
@@ -130,19 +174,6 @@ class Game:
         channel = pygame.mixer.find_channel()  # Поиск свободного канала
         if channel:
             channel.play(sound)
-
-    def start_game(self):
-        """
-        Запускает игровой режим: убирает элементы меню.
-        """
-        self.player = Player((100, 100), self.all_sprites, self.enemies)
-        self.play = True
-        # Удаляем элементы меню
-        self.main.button_new_game.kill()
-        self.main.button_exit.kill()
-        self.main.button_shop.kill()
-        self.main.difficulty_dropdown.kill()
-        self.main.mute_icon.kill()
 
     def spawn_enemy(self):
         """
@@ -166,8 +197,6 @@ class Game:
         if len(self.items) <= 4:
             coord = (random.randint(0, screen_width), random.randint(0, screen_height))
             Item(coord, [self.all_sprites, self.items], self.player)
-
-
 
 
 if __name__ == '__main__':
