@@ -35,3 +35,18 @@ class Main_menu:
             relative_rect=pygame.Rect((80, screen_height - 120), (150, 40)),
             manager=self.manager,
         )
+
+        self.best_score = self.load_best_score()
+        self.record_label = pygame_gui.elements.UILabel(
+            relative_rect=pygame.Rect((screen_width // 2 - 100, 100), (200, 50)),
+            text=f"Рекорд: {self.best_score}",
+            manager=self.manager,
+        )
+
+    def load_best_score(self):
+        try:
+            with open("scores.txt", "r") as file:
+                scores = [float(line.strip()) for line in file.readlines()]
+                return max(scores) if scores else 0
+        except FileNotFoundError:
+            return 0

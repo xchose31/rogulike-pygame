@@ -16,6 +16,8 @@ class Enemy(pygame.sprite.Sprite):
         self.direction = pygame.Vector2()
         self.speed = 150 * self.k
         self.player = player
+        self.rect.w -= 20
+        self.rect.h -= 20
 
     def move(self, dt):
         direction = pygame.math.Vector2(self.player.rect.center) - pygame.math.Vector2(self.rect.center)
