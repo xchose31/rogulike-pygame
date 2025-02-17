@@ -60,6 +60,7 @@ class Player(pygame.sprite.Sprite):
             self.kill()
             Game.play(Game, 'Game Over.mp3')
 
+
     def draw_health_bar(self, screen):
         """
         Рисует полоску здоровья над игроком.
