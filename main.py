@@ -1,5 +1,6 @@
 import random
-
+import sqlite3
+import datetime
 import pygame.sprite
 import pygame_gui
 from Main_menu import *
@@ -14,6 +15,7 @@ import os
 class Game:
     def __init__(self):
         pygame.init()
+        self.player_class = Player
         self.screen = pygame.display.set_mode((screen_width, screen_height))
         pygame.display.set_caption("Игра")
         self.clock = pygame.time.Clock()
@@ -32,7 +34,8 @@ class Game:
         self.shoot_interval = 0.5
         self.spawn_interval = 3
         self.score = 0
-        self.font = pygame.font.Font(None, 74)
+        self.font1 = pygame.font.Font(None, 74)
+        self.font2 = pygame.font.Font(None, 60)
         self.difficulty_settings = {
             "Легко": 5,
             "Средне": 3,
@@ -114,6 +117,7 @@ class Game:
         self.main.button_shop.kill()
         self.main.difficulty_dropdown.kill()
         self.main.mute_icon.kill()
+        self.start_time = datetime.datetime.now()
 
     def draw_game(self):
         """
@@ -135,13 +139,16 @@ class Game:
         """
         Отображает текст "Game Over" на экране.
         """
-        text = self.font.render("Game Over", True, (255, 0, 0))
+        text = self.font1.render("Game Over", True, (255, 0, 0))
         text_rect = text.get_rect(center=(screen_width // 2, screen_height // 2))
         self.screen.blit(text, text_rect)
+        text2 = self.font2.render(f"Score: {self.score}", True, (255, 0, 0))
+        text2_rect = text2.get_rect(center=(screen_width // 2, screen_height // 2 + 90))
+        self.screen.blit(text2, text2_rect)
 
     def draw_score(self):
         self.score = self.player.counter * 10 + round(self.score_timer, 1) + self.player.kill_counter * 5
-        text = self.font.render(str(self.score), True, (255, 0, 0))
+        text = self.font2.render(str(self.score), True, (255, 0, 0))
         self.screen.blit(text, (10, 10))
 
     def reload_bar(self):
@@ -161,9 +168,16 @@ class Game:
         pygame.draw.rect(self.screen, fill_color, (reload_bar_x, reload_bar_y, fill_width, bar_height))
 
     def save_score(self):
-        with open("scores.txt", "a") as file:
-            file.write(f"{self.score}\n")
-        print(f"Очки сохранены: {self.score}")
+        # with open("scores.txt", "a") as file:
+        #     file.write(f"{self.score}\n")
+        con = sqlite3.connect('./data/database/base.sqlite')
+        cur = con.cursor()
+        end_time = datetime.datetime.now()
+        duration = str(end_time - self.start_time)
+        cur.execute("""INSERT INTO scores(score, time, kill, coins) VALUES(?, ?, ?, ?)""",
+                    (self.score, duration, self.player.kill_counter, self.score))
+        con.commit()
+        print(f"Очки сохранены: {self.score, duration, self.player.kill_counter, self.score}")
 
     def play(self, filename):
         current_directory = os.path.dirname(__file__)

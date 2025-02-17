@@ -27,6 +27,7 @@ class Player(pygame.sprite.Sprite):
         self.killed = False
         self.counter = 0
         self.kill_counter = 0
+        self.coins = 0
 
     def input(self):
         keys = pygame.key.get_pressed()
@@ -108,6 +109,7 @@ class Player(pygame.sprite.Sprite):
 
     def take_item(self):
         self.counter += 5
+        self.coins += 1
 
 
 class Bullet(pygame.sprite.Sprite):
