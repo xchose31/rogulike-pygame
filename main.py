@@ -6,11 +6,12 @@ import pygame_gui
 from Main_menu import *
 from settings import *
 from Player import *
-from Item import *
+from Item import Item
 from Enemy import *
 from pytmx.util_pygame import load_pygame
 import os
 
+VOLUME = True
 
 class Game:
     def __init__(self):
@@ -64,6 +65,7 @@ class Game:
                             if self.main.mute_icon.text == "звук+":
                                 self.main.mute_icon.set_text("звук-")
                                 print("Звук выключен")
+                                print(VOLUME)
                             else:
                                 self.main.mute_icon.set_text("звук+")
                                 print("Звук включен")
@@ -100,7 +102,6 @@ class Game:
                         self.spawn_timer = 0
                 # Логика и отрисовка самой игры
                 self.draw_game()
-
             self.all_sprites.update(dt)
             pygame.display.update()
         pygame.quit()
@@ -168,16 +169,14 @@ class Game:
         pygame.draw.rect(self.screen, fill_color, (reload_bar_x, reload_bar_y, fill_width, bar_height))
 
     def save_score(self):
-        # with open("scores.txt", "a") as file:
-        #     file.write(f"{self.score}\n")
         con = sqlite3.connect('./data/database/base.sqlite')
         cur = con.cursor()
         end_time = datetime.datetime.now()
         duration = str(end_time - self.start_time)
         cur.execute("""INSERT INTO scores(score, time, kill, coins) VALUES(?, ?, ?, ?)""",
-                    (self.score, duration, self.player.kill_counter, self.score))
+                    (self.score, duration, self.player.kill_counter, self.player.coins))
         con.commit()
-        print(f"Очки сохранены: {self.score, duration, self.player.kill_counter, self.score}")
+        print(f"Очки сохранены: {self.score, duration, self.player.kill_counter, self.player.coins}")
 
     def play(self, filename):
         current_directory = os.path.dirname(__file__)
@@ -187,7 +186,8 @@ class Game:
         sound = pygame.mixer.Sound(sound_file_path)  # Создание объекта Sound
         channel = pygame.mixer.find_channel()  # Поиск свободного канала
         if channel:
-            channel.play(sound)
+            if VOLUME:
+                channel.play(sound)
 
     def spawn_enemy(self):
         """
@@ -210,7 +210,7 @@ class Game:
         """
         if len(self.items) <= 4:
             coord = (random.randint(0, screen_width), random.randint(0, screen_height))
-            Item(coord, [self.all_sprites, self.items], self.player)
+            Item(coord, (self.all_sprites, self.items), self.player)
 
 
 if __name__ == '__main__':
