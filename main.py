@@ -1,8 +1,13 @@
 import random
+import multiprocessing
 import sqlite3
 import datetime
+import sys
+
 import pygame.sprite
 import pygame_gui
+from PyQt6.QtWidgets import QApplication
+from Shop import ShopUI
 from Main_menu import *
 from settings import *
 from Player import *
@@ -43,6 +48,16 @@ class Game:
             "Тяжело": 1
         }
         self.player = None
+        self.check_money()
+        self.skin_num = 0
+        self.shop_ui = None
+        self.shop_visible = False  # Флаг для отслеживания видимости магазина
+        self.skin_images = [
+            pygame.image.load('./data/player/PlayerLeft0.png'),
+            pygame.image.load('./data/player/PlayerLeft1.png'),
+            pygame.image.load('./data/player/PlayerRight0.png')
+        ]
+        self.skin_prices = [100, 150, 200]
 
     def run(self):
         while self.running:
@@ -52,12 +67,16 @@ class Game:
                     self.running = False
                 if not self.play:  # Обработка событий меню
                     self.main.manager.process_events(event)
+                    if self.shop_ui:
+                        self.shop_ui.handle_event(event)
                     if event.type == pygame_gui.UI_BUTTON_PRESSED:
                         if event.ui_element == self.main.button_new_game:
                             print("Начата новая игра!")
                             self.start_game()  # Переключение в игровой режим
                         elif event.ui_element == self.main.button_shop:
-                            print("Открыт магазин!")
+                            print("Магазин открыт/закрыт!")
+                            self.toggle_shop()
+                        # Ожидание завершения процесса магазина
                         elif event.ui_element == self.main.button_exit:
                             print("Выход из игры!")
                             self.running = False
@@ -90,6 +109,8 @@ class Game:
             if not self.play:  # Меню
                 self.main.manager.update(dt)
                 self.main.manager.draw_ui(self.screen)
+                if self.shop_ui:
+                    self.shop_ui.draw()
             else:  # Игровой режим
                 # Обновление таймеров и создание врагов
                 if not self.player.killed:
@@ -106,11 +127,30 @@ class Game:
             pygame.display.update()
         pygame.quit()
 
+    def toggle_shop(self):
+        """
+        Переключает видимость магазина.
+        """
+        self.shop_visible = not self.shop_visible  # Инвертируем флаг видимости
+        if self.shop_visible:
+            if not self.shop_ui:  # Создаем магазин, если он еще не создан
+                self.shop_ui = ShopUI(self.screen, self.main.manager, self.skin_images, self.skin_prices)
+        else:
+            if self.shop_ui:
+                # Убираем кнопки магазина
+                for button in self.shop_ui.buttons:
+                    button.kill()
+                self.shop_ui = None
+
     def start_game(self):
         """
         Запускает игровой режим: убирает элементы меню.
         """
-        self.player = Player((100, 100), self.all_sprites, self.enemies)
+        with open('./data/saved_inf', 'r') as file:
+            ls = file.readlines()
+            ls = [line.rstrip() for line in ls]
+            self.skin_num = int(ls[-1][-1])
+        self.player = Player((100, 100), self.all_sprites, self.enemies, self.skin_num)
         self.play = True
         # Удаляем элементы меню
         self.main.button_new_game.kill()
@@ -176,7 +216,21 @@ class Game:
         cur.execute("""INSERT INTO scores(score, time, kill, coins) VALUES(?, ?, ?, ?)""",
                     (self.score, duration, self.player.kill_counter, self.player.coins))
         con.commit()
+        new_money = self.player.coins + self.player.kill_counter * 2
+        with open('имя_файла.txt', 'r') as file:
+            lines = file.readlines()
+
+        # Меняем первую строку
+        lines[0] = f'{lines[0] + new_money}\n'
+
+        # Записываем обратно в файл
+        with open('имя_файла.txt', 'w') as file:
+            file.writelines(lines)
         print(f"Очки сохранены: {self.score, duration, self.player.kill_counter, self.player.coins}")
+
+    def check_money(self):
+        with open('./data/saved_inf', 'r') as file:
+            self.money = int(file.readlines()[0])
 
     def play(self, filename):
         current_directory = os.path.dirname(__file__)

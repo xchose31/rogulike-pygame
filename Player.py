@@ -5,10 +5,10 @@ from settings import *
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, pos, groups, enemies):
+    def __init__(self, pos, groups, enemies, skin_num=1):
         super().__init__(groups)
         pygame.mixer.init()
-        self.image = pygame.image.load(join('data', 'player', 'PlayerLeft.png'))
+        self.image = pygame.image.load(join('data', 'player', f'PlayerLeft{skin_num}.png'))
         self.image = pygame.transform.scale(self.image,
                                             (int(self.image.get_width() * 2), int(self.image.get_height() * 2)))
         self.left = False
@@ -16,8 +16,10 @@ class Player(pygame.sprite.Sprite):
         self.rect.w -= 10
         self.rect.h -= 10
         self.images = {
-            'left': pygame.transform.scale(pygame.image.load(join('data', 'player', 'PlayerLeft.png')), (30, 30)),
-            'right': pygame.transform.scale(pygame.image.load(join('data', 'player', 'PlayerRight.png')), (30, 30))
+            'left': pygame.transform.scale(pygame.image.load(join('data', 'player', f'PlayerLeft{skin_num}.png')),
+                                           (30, 30)),
+            'right': pygame.transform.scale(pygame.image.load(join('data', 'player', f'PlayerRight{skin_num}.png')),
+                                            (30, 30))
         }
         self.direction = pygame.Vector2()
         self.speed = 500
@@ -59,7 +61,7 @@ class Player(pygame.sprite.Sprite):
             print("Игрок уничтожен!")
             self.killed = True
             self.kill()
-            Game.play( Game, 'Game Over.mp3')
+            Game.play(Game, 'Game Over.mp3')
 
     def draw_health_bar(self, screen):
         """
