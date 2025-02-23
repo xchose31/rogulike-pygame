@@ -6,8 +6,8 @@ import sys
 
 import pygame.sprite
 import pygame_gui
-from PyQt6.QtWidgets import QApplication
-from Shop import ShopUI
+
+from shop import ShopUI
 from Main_menu import *
 from settings import *
 from Player import *
@@ -217,14 +217,14 @@ class Game:
                     (self.score, duration, self.player.kill_counter, self.player.coins))
         con.commit()
         new_money = self.player.coins + self.player.kill_counter * 2
-        with open('имя_файла.txt', 'r') as file:
+        with open('./data/saved_inf', 'r') as file:
             lines = file.readlines()
 
         # Меняем первую строку
-        lines[0] = f'{lines[0] + new_money}\n'
+        lines[0] = f'{int(lines[0].strip()) + new_money}\n'
 
         # Записываем обратно в файл
-        with open('имя_файла.txt', 'w') as file:
+        with open('./data/saved_inf', 'w') as file:
             file.writelines(lines)
         print(f"Очки сохранены: {self.score, duration, self.player.kill_counter, self.player.coins}")
 
