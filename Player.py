@@ -40,17 +40,46 @@ class Player(pygame.sprite.Sprite):
     def move(self, dt):
         """Двигает игрока, если нет коллизий."""
         # Создаем временную прямоугольную область для будущей позиции
-        future_rect = self.rect.copy()
-        future_rect.center += self.direction * self.speed * dt
+        # future_rect = self.rect.copy()
+        # future_rect.center += self.direction * self.speed * dt
+        # print(self.direction)
+        #
+        # # Проверяем коллизии с врагами
+        # collided_enemies = pygame.sprite.spritecollide(self, self.enemies, False)
+        # for enemy in collided_enemies:
+        #     if future_rect.colliderect(enemy.rect):  # Если будущая позиция пересекается
+        #         return  # Отменяем движение
+        #
+        # # Если коллизий нет, обновляем позицию
+        # self.rect.center = future_rect.center
 
-        # Проверяем коллизии с врагами
-        collided_enemies = pygame.sprite.spritecollide(self, self.enemies, False)
-        for enemy in collided_enemies:
-            if future_rect.colliderect(enemy.rect):  # Если будущая позиция пересекается
-                return  # Отменяем движение
+        # Сохраняем текущую позицию игрока
+        original_x, original_y = self.rect.center
 
-        # Если коллизий нет, обновляем позицию
-        self.rect.center = future_rect.center
+        # Движение по оси X
+        future_rect_x = self.rect.copy()
+        future_rect_x.centerx += self.direction.x * self.speed * dt
+
+        # Проверка коллизий по оси X
+
+        collision_x = any(future_rect_x.colliderect(obj.rect) for obj in self.enemies)
+
+        if not collision_x:
+            self.rect.centerx = future_rect_x.centerx  # Обновляем позицию по X, если нет коллизий
+        else:
+            self.rect.centerx = original_x  # Возвращаем позицию по X, если есть коллизия
+
+        # Движение по оси Y
+        future_rect_y = self.rect.copy()
+        future_rect_y.centery += self.direction.y * self.speed * dt
+
+        # Проверка коллизий по оси Y
+        collision_y = any(future_rect_y.colliderect(obj.rect) for obj in self.enemies)
+
+        if not collision_y:
+            self.rect.centery = future_rect_y.centery  # Обновляем позицию по Y, если нет коллизий
+        else:
+            self.rect.centery = original_y  # Возвращаем позицию по Y, если есть коллизи
 
     def take_damage(self, amount):
         """Наносит урон игроку."""
@@ -134,6 +163,9 @@ class Bullet(pygame.sprite.Sprite):
                 enemy.kill()  # Игрок получает урон
                 self.kill()
                 self.player.kill_counter += 1
+        collided_enemies = pygame.sprite.spritecollide(self, self.player.enemies, False)
+        if collided_enemies:
+            self.kill()
 
     def update(self, dt):
         self.rect.center += self.direction * self.speed * dt

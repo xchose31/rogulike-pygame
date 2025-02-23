@@ -1,3 +1,5 @@
+import random
+
 import pygame
 from os import path
 from Player import *
@@ -29,6 +31,10 @@ class Item(pygame.sprite.Sprite):
         if self.rect.colliderect(self.player.rect):
             self.kill()
             self.player.take_item()
+        for elem in self.player.enemies:
+            if self.rect.colliderect(elem.rect):
+                print(1)
+                self.rect.center = (random.randint(0, screen_width), random.randint(0, screen_height))
 
     def update(self, dt):
         self.check_collisions()
