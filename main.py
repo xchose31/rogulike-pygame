@@ -7,16 +7,17 @@ import sys
 import pygame.sprite
 import pygame_gui
 
-from shop import ShopUI
+from Shop import ShopUI
 from Main_menu import *
 from settings import *
 from Player import *
 from Item import Item
 from Enemy import *
-from pytmx.util_pygame import load_pygame
+
 import os
 
 VOLUME = True
+
 
 class Game:
     def __init__(self):
@@ -48,14 +49,14 @@ class Game:
             "Тяжело": 1
         }
         self.player = None
-        self.check_money()
-        self.skin_num = 0
+        self.check_money_skins()
+        self.skin_num = 1
         self.shop_ui = None
         self.shop_visible = False  # Флаг для отслеживания видимости магазина
         self.skin_images = [
-            pygame.image.load('./data/player/PlayerLeft0.png'),
+            pygame.image.load('./data/player/PlayerLeft2.png'),
             pygame.image.load('./data/player/PlayerLeft1.png'),
-            pygame.image.load('./data/player/PlayerRight0.png')
+            pygame.image.load('./data/player/PlayerRight2.png')
         ]
         self.skin_prices = [100, 150, 200]
 
@@ -94,6 +95,12 @@ class Game:
                             difficulty = self.main.difficulty_dropdown.selected_option
                             print(difficulty[0])
                             self.spawn_interval = self.difficulty_settings[difficulty[0]]
+                        elif event.ui_element == self.main.set_skin_dropdown:
+                            if self.main.set_skin_dropdown.selected_option[0] in self.skins:
+                                self.skin_num = int(self.main.set_skin_dropdown.selected_option[0])
+                                print(f"Скин установлен {self.skin_num}")
+                            else:
+                                print("Скина нет")
                 if event.type == pygame.MOUSEBUTTONDOWN and not self.player is None and self.shoot_timer >= self.shoot_interval:
                     if event.button == 1:
                         mouse_pos = pygame.mouse.get_pos()
@@ -134,7 +141,7 @@ class Game:
         self.shop_visible = not self.shop_visible  # Инвертируем флаг видимости
         if self.shop_visible:
             if not self.shop_ui:  # Создаем магазин, если он еще не создан
-                self.shop_ui = ShopUI(self.screen, self.main.manager, self.skin_images, self.skin_prices)
+                self.shop_ui = ShopUI(self.screen, self.main.manager, self.skin_images)
         else:
             if self.shop_ui:
                 # Убираем кнопки магазина
@@ -146,10 +153,6 @@ class Game:
         """
         Запускает игровой режим: убирает элементы меню.
         """
-        with open('./data/saved_inf', 'r') as file:
-            ls = file.readlines()
-            ls = [line.rstrip() for line in ls]
-            self.skin_num = int(ls[-1][-1])
         self.player = Player((100, 100), self.all_sprites, self.enemies, self.skin_num)
         self.play = True
         # Удаляем элементы меню
@@ -186,6 +189,11 @@ class Game:
         text2 = self.font2.render(f"Score: {self.score}", True, (255, 0, 0))
         text2_rect = text2.get_rect(center=(screen_width // 2, screen_height // 2 + 90))
         self.screen.blit(text2, text2_rect)
+        text3 = self.font2.render(
+            f"Заработано: {str(self.player.coins + self.player.kill_counter * 2)}, убито: {self.player.kill_counter}, подобрано монеток: {self.player.coins}",
+            True, (255, 0, 0))
+        text3_rect = text3.get_rect(center=(screen_width // 2, screen_height // 2 + 170))
+        self.screen.blit(text3, text3_rect)
 
     def draw_score(self):
         self.score = self.player.counter * 10 + round(self.score_timer, 1) + self.player.kill_counter * 5
@@ -228,9 +236,12 @@ class Game:
             file.writelines(lines)
         print(f"Очки сохранены: {self.score, duration, self.player.kill_counter, self.player.coins}")
 
-    def check_money(self):
+    def check_money_skins(self):
         with open('./data/saved_inf', 'r') as file:
-            self.money = int(file.readlines()[0])
+            ls = file.readlines()
+            ls = [line.rstrip() for line in ls]
+            self.money = int(ls[0])
+            self.skins = ls[1:]
 
     def play(self, filename):
         current_directory = os.path.dirname(__file__)

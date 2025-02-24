@@ -4,6 +4,7 @@ from settings import *
 
 class Main_menu:
     def __init__(self):
+        self.check_skins()
         self.manager = pygame_gui.UIManager((screen_width, screen_height), theme_path=None)
         self.button_new_game = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((screen_width // 2 - 100, 200), (200, 50)),
@@ -36,12 +37,25 @@ class Main_menu:
             manager=self.manager,
         )
 
+        self.set_skin_dropdown = pygame_gui.elements.UIDropDownMenu(
+            options_list=['1', '2', '3'],
+            starting_option="1",
+            relative_rect=pygame.Rect((800, screen_height - 120), (150, 40)),
+            manager=self.manager,
+        )
+
         self.best_score = self.load_best_score()
         self.record_label = pygame_gui.elements.UILabel(
             relative_rect=pygame.Rect((screen_width // 2 - 100, 100), (200, 50)),
             text=f"Рекорд: {self.best_score}",
             manager=self.manager,
         )
+
+    def check_skins(self):
+        with open('./data/saved_inf') as file:
+            ls = file.readlines()
+            ls = [line.rstrip() for line in ls]
+            self.skins = ls[1:-1]
 
     def load_best_score(self):
         try:

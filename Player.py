@@ -5,9 +5,10 @@ from settings import *
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, pos, groups, enemies, skin_num=1):
+    def __init__(self, pos, groups, enemies, skin_num):
         super().__init__(groups)
         pygame.mixer.init()
+        print(skin_num)
         self.image = pygame.image.load(join('data', 'player', f'PlayerLeft{skin_num}.png'))
         self.image = pygame.transform.scale(self.image,
                                             (int(self.image.get_width() * 2), int(self.image.get_height() * 2)))
