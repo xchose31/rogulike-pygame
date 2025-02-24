@@ -3,19 +3,19 @@ import pygame
 
 
 class ShopUI:
-    def __init__(self, screen, manager, skin_images, skin_prices):
+    def __init__(self, screen, manager, skin_images):
         self.screen = screen
         self.manager = manager
         # Увеличиваем изображения в 3 раза
         self.skin_images = [pygame.transform.scale(image, (image.get_width() * 3, image.get_height() * 3)) for image in skin_images]
-        self.skin_prices = skin_prices
+        self.skin_prices = [100, 100, 100]
         self.buttons = []
         self.create_ui()
         with open('./data/saved_inf', 'r') as file:
             ls = file.readlines()
             ls = [line.rstrip() for line in ls]
             self.money = int(ls[0])
-            self.skins = ls[1:-1]
+            self.skins = ls[1:]
 
     def create_ui(self):
         button_width = 150
@@ -44,16 +44,19 @@ class ShopUI:
                 if event.ui_element == button:
                     if self.buy_skin(i):
                         print(f"Скин {i + 1} куплен!")
-                    else:
-                        print("Недостаточно денег!")
+
 
     def buy_skin(self, skin_index):
-        if skin_index not in self.skins:
+        if str(skin_index + 1) not in self.skins:
             if self.skin_prices[skin_index] <= self.money:
                 self.money -= 100
                 self.skins.append(skin_index)
                 self.write_current_skin(skin_index)
                 return True
+            else:
+                print("Недостаточно денег")
+        else:
+            print("Такой скин уже есть")
         return False
 
     def write_current_skin(self, skin_num):
@@ -61,7 +64,7 @@ class ShopUI:
             lines = file.readlines()
 
         # Меняем первую строку
-        lines[-1] = f"cur_skin: {skin_num}"
+        lines.append(f"{str(skin_num + 1)}\n")
         lines[0] = f"{self.money}\n"
 
         # Записываем обратно в файл
