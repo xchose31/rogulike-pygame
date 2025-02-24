@@ -5,6 +5,7 @@ from settings import *
 class Main_menu:
     def __init__(self):
         self.check_skins()
+        self.money = 0
         self.manager = pygame_gui.UIManager((screen_width, screen_height), theme_path=None)
         self.button_new_game = pygame_gui.elements.UIButton(
             relative_rect=pygame.Rect((screen_width // 2 - 100, 200), (200, 50)),
@@ -46,8 +47,8 @@ class Main_menu:
 
         self.best_score = self.load_best_score()
         self.record_label = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect((screen_width // 2 - 100, 100), (200, 50)),
-            text=f"Рекорд: {self.best_score}",
+            relative_rect=pygame.Rect((screen_width // 2 - 100, 80), (200, 100)),
+            text=f"Рекорд: {self.best_score[0]}\nДеньги: {self.best_score[1]}",
             manager=self.manager,
         )
 
@@ -61,6 +62,8 @@ class Main_menu:
         try:
             with open("scores.txt", "r") as file:
                 scores = [float(line.strip()) for line in file.readlines()]
-                return max(scores) if scores else 0
+                with open('./data/saved_inf') as file1:
+                    return (max(scores) if scores else 0, int(file1.readlines()[0]))
+
         except FileNotFoundError:
             return 0
