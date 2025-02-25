@@ -8,7 +8,6 @@ class Player(pygame.sprite.Sprite):
     def __init__(self, pos, groups, enemies, skin_num):
         super().__init__(groups)
         pygame.mixer.init()
-        print(skin_num)
         self.image = pygame.image.load(join('data', 'player', f'PlayerLeft{skin_num}.png'))
         self.image = pygame.transform.scale(self.image,
                                             (int(self.image.get_width() * 2), int(self.image.get_height() * 2)))
@@ -56,13 +55,11 @@ class Player(pygame.sprite.Sprite):
     def take_damage(self, amount):
         """Наносит урон игроку."""
         self.health -= amount
-        print(f"Здоровье игрока: {self.health}")
-        Game.play(Game, 'hp.mp3')
+        Game.play_sound(Game, 'hp.mp3')
         if self.health <= 0:
-            print("Игрок уничтожен!")
             self.killed = True
             self.kill()
-            Game.play(Game, 'Game Over.mp3')
+            Game.play_sound(Game, 'Game Over.mp3')
 
     def draw_health_bar(self, screen):
         """

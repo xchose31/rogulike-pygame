@@ -1,3 +1,5 @@
+import sqlite3
+
 import pygame_gui
 from settings import *
 
@@ -25,12 +27,6 @@ class Main_menu:
             manager=self.manager,
         )
 
-        self.mute_icon = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((20, screen_height - 120), (50, 50)),
-            text="звук+",  # Иконка звука
-            manager=self.manager,
-        )
-
         self.difficulty_dropdown = pygame_gui.elements.UIDropDownMenu(
             options_list=["Легко", "Средне", "Тяжело"],
             starting_option="Средне",
@@ -47,8 +43,8 @@ class Main_menu:
 
         self.best_score = self.load_best_score()
         self.record_label = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect((screen_width // 2 - 100, 80), (200, 100)),
-            text=f"Рекорд: {self.best_score[0]}\nДеньги: {self.best_score[1]}",
+            relative_rect=pygame.Rect((screen_width // 2 + 100, 0), (300, 200)),
+            text=f"Рекорд: {self.best_score[0][0]}\nДеньги: {self.best_score[1]}",
             manager=self.manager,
         )
 
@@ -59,11 +55,9 @@ class Main_menu:
             self.skins = ls[1:-1]
 
     def load_best_score(self):
-        try:
-            with open("scores.txt", "r") as file:
-                scores = [float(line.strip()) for line in file.readlines()]
-                with open('./data/saved_inf') as file1:
-                    return (max(scores) if scores else 0, int(file1.readlines()[0]))
-
-        except FileNotFoundError:
-            return 0
+        con = sqlite3.connect('./data/database/base.sqlite')
+        cur = con.cursor()
+        cur.execute("""SELECT DISTINCT score from scores ORDER BY score DESC""")
+        max_score = cur.fetchone()
+        with open('./data/saved_inf') as file1:
+            return (max_score if max_score else 0, int(file1.readlines()[0]))

@@ -1,22 +1,13 @@
 import random
-import multiprocessing
-import sqlite3
 import datetime
-import sys
-
 import pygame.sprite
-import pygame_gui
-
 from Shop import ShopUI
 from Main_menu import *
 from settings import *
 from Player import *
 from Item import Item
 from Enemy import *
-
 import os
-
-VOLUME = True
 
 
 class Game:
@@ -54,9 +45,9 @@ class Game:
         self.shop_ui = None
         self.shop_visible = False  # Флаг для отслеживания видимости магазина
         self.skin_images = [
-            pygame.image.load('./data/player/PlayerLeft2.png'),
             pygame.image.load('./data/player/PlayerLeft1.png'),
-            pygame.image.load('./data/player/PlayerRight2.png')
+            pygame.image.load('./data/player/PlayerLeft2.png'),
+            pygame.image.load('./data/player/PlayerLeft3.png')
         ]
         self.skin_prices = [100, 150, 200]
 
@@ -72,35 +63,19 @@ class Game:
                         self.shop_ui.handle_event(event)
                     if event.type == pygame_gui.UI_BUTTON_PRESSED:
                         if event.ui_element == self.main.button_new_game:
-                            print("Начата новая игра!")
                             self.start_game()  # Переключение в игровой режим
                         elif event.ui_element == self.main.button_shop:
-                            print("Магазин открыт/закрыт!")
                             self.toggle_shop()
                         # Ожидание завершения процесса магазина
                         elif event.ui_element == self.main.button_exit:
-                            print("Выход из игры!")
                             self.running = False
-                        elif event.ui_element == self.main.mute_icon:
-                            if self.main.mute_icon.text == "звук+":
-                                self.main.mute_icon.set_text("звук-")
-                                print("Звук выключен")
-                                print(VOLUME)
-                            else:
-                                self.main.mute_icon.set_text("звук+")
-                                print("Звук включен")
                     if event.type == pygame_gui.UI_DROP_DOWN_MENU_CHANGED:
                         if event.ui_element == self.main.difficulty_dropdown:
-                            print(f"Выбрана сложность: {self.main.difficulty_dropdown.selected_option}")
                             difficulty = self.main.difficulty_dropdown.selected_option
-                            print(difficulty[0])
                             self.spawn_interval = self.difficulty_settings[difficulty[0]]
                         elif event.ui_element == self.main.set_skin_dropdown:
                             if self.main.set_skin_dropdown.selected_option[0] in self.skins:
                                 self.skin_num = int(self.main.set_skin_dropdown.selected_option[0])
-                                print(f"Скин установлен {self.skin_num}")
-                            else:
-                                print("Скина нет")
                 if event.type == pygame.MOUSEBUTTONDOWN and not self.player is None and self.shoot_timer >= self.shoot_interval:
                     if event.button == 1:
                         mouse_pos = pygame.mouse.get_pos()
@@ -155,12 +130,12 @@ class Game:
         """
         self.player = Player((100, 100), self.all_sprites, self.enemies, self.skin_num)
         self.play = True
+        self.play_sound('soundtrack.mp3', loop=True)
         # Удаляем элементы меню
         self.main.button_new_game.kill()
         self.main.button_exit.kill()
         self.main.button_shop.kill()
         self.main.difficulty_dropdown.kill()
-        self.main.mute_icon.kill()
         self.start_time = datetime.datetime.now()
 
     def draw_game(self):
@@ -234,7 +209,6 @@ class Game:
         # Записываем обратно в файл
         with open('./data/saved_inf', 'w') as file:
             file.writelines(lines)
-        print(f"Очки сохранены: {self.score, duration, self.player.kill_counter, self.player.coins}")
 
     def check_money_skins(self):
         with open('./data/saved_inf', 'r') as file:
@@ -243,16 +217,34 @@ class Game:
             self.money = int(ls[0])
             self.skins = ls[1:]
 
-    def play(self, filename):
+    def play_sound(self, filename, loop=False):
         current_directory = os.path.dirname(__file__)
         sounds_directory = os.path.join(current_directory, 'Sounds')
         sound_file_path = os.path.join(sounds_directory, filename)
+
+        # Убедимся, что есть достаточно каналов
         pygame.mixer.set_num_channels(1000)
-        sound = pygame.mixer.Sound(sound_file_path)  # Создание объекта Sound
-        channel = pygame.mixer.find_channel()  # Поиск свободного канала
+
+        # Создание объекта Sound
+        sound = pygame.mixer.Sound(sound_file_path)
+
+        # Поиск свободного канала
+        channel = pygame.mixer.find_channel()
         if channel:
-            if VOLUME:
-                channel.play(sound)
+            # Воспроизведение звука с учетом зацикливания
+            if loop:
+                channel.play(sound, loops=-1)  # -1 означает бесконечное повторение
+            else:
+                channel.play(sound)  # Одноразовое воспроизведение
+            self.current_sound = sound  # Сохраняем текущий звук
+            self.current_channel = channel  # Сохраняем текущий канал
+
+    def stop(self):
+        """Останавливает воспроизведение текущего звука."""
+        if self.current_channel:
+            self.current_channel.stop()
+            self.current_sound = None
+            self.current_channel = None
 
     def spawn_enemy(self):
         """
