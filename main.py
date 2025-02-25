@@ -60,7 +60,11 @@ class Game:
             pygame.image.load('./data/player/PlayerRight0.png')
         ]
         self.skin_prices = [100, 150, 200]
-        self.map = TileMap(MAP_DATA, 100, self.all_sprites)
+        self.map = TileMap(MAP_DATA[random.choice([0, 1, 2])], 100, self.all_sprites)
+        background = ['data/maps/canvas.png', 'data/maps/back2.png', 'data/maps/back3.png']
+        self.im = pygame.image.load(random.choice(background))
+        self.im = pygame.transform.scale(self.im,
+                                         (screen_width, screen_height))
 
     def run(self):
         while self.running:
@@ -153,7 +157,7 @@ class Game:
             ls = file.readlines()
             ls = [line.rstrip() for line in ls]
             self.skin_num = int(ls[-1][-1])
-        self.player = Player((100, 100), self.all_sprites, self.map.collide_sprites, self.skin_num)
+        self.player = Player((500, 500), self.all_sprites, self.map.collide_sprites, self.skin_num)
         self.play = True
         # Удаляем элементы меню
         self.main.button_new_game.kill()
@@ -168,10 +172,7 @@ class Game:
         Логика и отрисовка игрового процесса.
         """
         if not self.player.killed:
-            im = pygame.image.load('data/maps/canvas.png')
-            im = pygame.transform.scale(im,
-                                        (int(im.get_width() * 5), int(im.get_height() * 5)))
-            self.screen.blit(im)
+            self.screen.blit(self.im)
             self.all_sprites.draw(self.screen)
             self.player.draw_health_bar(self.screen)
             self.draw_score()
