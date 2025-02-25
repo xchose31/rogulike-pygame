@@ -161,6 +161,9 @@ class Bullet(pygame.sprite.Sprite):
                 enemy.kill()  # Игрок получает урон
                 self.kill()
                 self.player.kill_counter += 1
+        collided_enemies = pygame.sprite.spritecollide(self, self.player.enemies, False)
+        if collided_enemies:
+            self.kill()
 
     def update(self, dt):
         self.rect.center += self.direction * self.speed * dt
