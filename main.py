@@ -113,7 +113,11 @@ class Game:
 
             # Отрисовка
             self.screen.fill(BACKGROUND_COLOR)
-            if not self.play:  # Меню
+            if not self.play:    # Меню
+                self.im1 = pygame.image.load('data/maps/back.png')
+                self.im1 = pygame.transform.scale(self.im1,
+                                                 (screen_width, screen_height))
+                self.screen.blit(self.im1)
                 self.main.manager.update(dt)
                 self.main.manager.draw_ui(self.screen)
                 if self.shop_ui:
