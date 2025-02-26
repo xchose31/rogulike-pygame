@@ -1,13 +1,14 @@
 import random
 import datetime
 import pygame.sprite
-from Shop import ShopUI
+from shop import ShopUI
 from Main_menu import *
 from settings import *
 from Player import *
 from Item import Item
 from Enemy import *
 import os
+from map import *
 
 
 class Game:
@@ -50,6 +51,11 @@ class Game:
             pygame.image.load('./data/player/PlayerLeft3.png')
         ]
         self.skin_prices = [100, 150, 200]
+        self.map = TileMap(MAP_DATA[random.choice([0, 1, 2])], 100, self.all_sprites)
+        background = ['data/maps/canvas.png', 'data/maps/back2.png', 'data/maps/back3.png']
+        self.im = pygame.image.load(random.choice(background))
+        self.im = pygame.transform.scale(self.im,
+                                         (screen_width, screen_height))
 
     def run(self):
         while self.running:
@@ -88,7 +94,11 @@ class Game:
 
             # Отрисовка
             self.screen.fill(BACKGROUND_COLOR)
-            if not self.play:  # Меню
+            if not self.play:    # Меню
+                self.im1 = pygame.image.load('data/maps/back.png')
+                self.im1 = pygame.transform.scale(self.im1,
+                                                 (screen_width, screen_height))
+                self.screen.blit(self.im1)
                 self.main.manager.update(dt)
                 self.main.manager.draw_ui(self.screen)
                 if self.shop_ui:
@@ -128,7 +138,7 @@ class Game:
         """
         Запускает игровой режим: убирает элементы меню.
         """
-        self.player = Player((100, 100), self.all_sprites, self.enemies, self.skin_num)
+        self.player = Player((500, 500), self.all_sprites, self.map.collide_sprites, self.skin_num)
         self.play = True
         self.play_sound('soundtrack.mp3', loop=True)
         # Удаляем элементы меню
@@ -143,6 +153,7 @@ class Game:
         Логика и отрисовка игрового процесса.
         """
         if not self.player.killed:
+            self.screen.blit(self.im)
             self.all_sprites.draw(self.screen)
             self.player.draw_health_bar(self.screen)
             self.draw_score()
